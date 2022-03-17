@@ -3,9 +3,16 @@ const app = express();
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.listen(8888, function () {
-  console.log('listening on 8888')
-});
+const MongoClient = require('mongodb').MongoClient;
+MongoClient.connect('mongodb+srv://admin:qwer1234@cluster0.pzldi.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', function (err, client) {
+  
+  if(err) {return console.log(err)}
+  app.listen(8888, function () {
+    console.log('listening on 8888')
+  });
+
+})
+
 //서버를 띄우기 위한 기본 셋팅(express 라이브러리)
 
 app.get('/test', function (req, resp) {

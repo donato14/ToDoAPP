@@ -6,7 +6,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 
 const MongoClient = require('mongodb').MongoClient;
-var db;
+let db;
 
 
 MongoClient.connect('mongodb+srv://admin:qwer1234@cluster0.pzldi.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', function (error, client) {
@@ -42,12 +42,25 @@ app.post('/add', function (req, resp) {
   // console.log(req.body);
   // console.log(req.body.title);
   // console.log(req.body.date);
+  db.collection('counter').findOne({ name: '게시물갯수' }, function (error, result) {
+    console.log(result.totalPost)
+    let 총게시물갯수 = result.totalPost;
 
-    db.collection('post').insertOne({ 제목: req.body.title, 날짜: req.body.date }, function (error, result) {
+    db.collection('post').insertOne({ _id : 총게시물갯수 + 1, 제목: req.body.title, 날짜: req.body.date }, function (error, result) {
       console.log('저장완료');
+      db.collection('counter').updateOne({ name: '게시물갯수' }, { $inc: { totalPost: 1 } }, function (error, result) {
+        if(error){return console.log(error)}
+      })
     });
+
+  });
 });
 
 app.get('/list', function (req, resp) { 
-  resp.render('list.ejs');
+  //db에 저장된 post란 collection 안의 모든 데이터를 꺼내주세요
+  db.collection('post').find().toArray(function (error, result) {
+    console.log(result);
+    resp.render('list.ejs', { posts : result });
+  });
+  
 });

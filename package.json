@@ -1,0 +1,24 @@
+{
+  "name": "todoapp",
+  "version": "1.0.0",
+  "description": "Node.js로 만드는 TODO_App",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/donato14/ToDoAPP.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/donato14/ToDoAPP/issues"
+  },
+  "homepage": "https://github.com/donato14/ToDoAPP#readme",
+  "dependencies": {
+    "body-parser": "^1.19.2",
+    "express": "^4.17.3",
+    "nodemon": "^2.0.15"
+  }
+}

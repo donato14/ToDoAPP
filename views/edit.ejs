@@ -19,14 +19,15 @@
     <h2>기록해도 안할 거 알지만</h2>
   </div>
   <div class="container mt-3">
-    <form action="/add" method="POST">
+    <form action="/edit?_method=PUT" method="POST">
       <div class="form-group">
         <label for="todo_title">오늘의 할일</label>
-        <input type="text" class="form-control" placeholder="<%= data.제목 %>" name="title">
+        <input type="text" value="<%= data._id %>" name="id" style="display: none;">
+        <input type="text" class="form-control" value="<%= data.제목 %>" name="title">
       </div>
       <div class="form-group">
         <label for="todo_contents">Due date</label>
-        <input type="text" class="form-control" placeholder="<%=data.날짜 %>" name="date"></input>
+        <input type="text" class="form-control" value="<%=data.날짜 %>" name="date"></input>
       </div>
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>

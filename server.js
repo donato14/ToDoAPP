@@ -3,9 +3,10 @@ const app = express();
 const bodyParser = require('body-parser');
 const { redirect } = require('express/lib/response');
 app.use(bodyParser.urlencoded({ extended: true }));
-
 app.set('view engine', 'ejs');
-
+app.use('/public', express.static('public'));
+const methodOverride = require('method-override')
+app.use(methodOverride('_method'))
 const MongoClient = require('mongodb').MongoClient;
 let db;
 
@@ -31,11 +32,11 @@ app.get('/test', function (req, resp) {
 });
 
 app.get('/', function (req, resp) {
-  resp.sendFile(__dirname + '/index.html');
+  resp.render('index.ejs');
 });
 
 app.get('/write', function (req, resp) {
-  resp.sendFile(__dirname + '/write.html');
+  resp.render('write.ejs');
 });
 
 app.post('/add', function (req, resp) {
@@ -80,7 +81,24 @@ app.get('/detail/:id', function (req, resp) {
     console.log(result);
     resp.render('detail.ejs', { data: result })
     if (result == null) {
-      resp.render("error.ejs");
+      resp.render('error.ejs');
     }
+  })
+});
+
+app.get('/edit/:id', function (req, resp) { 
+  db.collection('post').findOne({ _id: parseInt(req.params.id) }, function(error, result) {
+    console.log(result);
+    resp.render('edit.ejs', { data: result })
+    if (result == null) {
+      resp.render('error.ejs')
+    }
+  })
+});
+
+app.put('/edit', function (req, resp) { 
+  db.collection('post').updateOne({ _id : parseInt(req.body.id) }, { $set : { 제목:req.body.title, 날짜:req.body.date}}, function (error, result) {
+    console.log('수정완료')
+    resp.redirect('/list')
   })
 });

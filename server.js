@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const { redirect } = require('express/lib/response');
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set('view engine', 'ejs');
@@ -63,4 +64,23 @@ app.get('/list', function (req, resp) {
     resp.render('list.ejs', { posts : result });
   });
   
+});
+
+app.delete('/delete', function (req, resp) {
+  console.log(req.body);
+  req.body._id = parseInt(req.body._id);
+  db.collection('post').deleteOne(req.body, function (error, result) {
+    console.log('삭제완료');
+    resp.status(200).send({ message : '성공했습니다' });
+  });
+});
+
+app.get('/detail/:id', function (req, resp) {
+  db.collection('post').findOne({_id : parseInt(req.params.id)}, function (error, result) {
+    console.log(result);
+    resp.render('detail.ejs', { data: result })
+    if (result == null) {
+      resp.render("error.ejs");
+    }
+  })
 });

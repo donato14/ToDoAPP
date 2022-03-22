@@ -46,7 +46,7 @@ app.post('/add', function (req, resp) {
   // console.log(req.body.title);
   // console.log(req.body.date);
   db.collection('counter').findOne({ name: '게시물갯수' }, function (error, result) {
-    console.log(result.totalPost)
+    // console.log(result.totalPost)
     let 총게시물갯수 = result.totalPost;
 
     db.collection('post').insertOne({ _id : 총게시물갯수 + 1, 제목: req.body.title, 날짜: req.body.date }, function (error, result) {
@@ -167,3 +167,27 @@ passport.deserializeUser(function (아이디, done) {
     done(null, result)
   })
 });
+
+//검색기능
+app.get('/search', (req, resp) => {
+  // console.log(req.query.value);
+  var 검색조건 = [
+    {
+      $search: {
+        index: 'titleSearch',
+        text: {
+          query: req.query.value,
+          path: "제목"
+        }
+      }
+    },
+    // { $sort: { _id: -1 } },
+    // { $limit : 5 }
+    // { $project : { 제목: 1, _id: 0, score: { $meta: "searchScore" } } }
+  ]
+  db.collection('post').aggregate(검색조건).toArray((error, result) => {
+    // console.log(result);
+    resp.render('search.ejs',{posts : result})
+  })
+});
+

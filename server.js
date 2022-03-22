@@ -9,7 +9,7 @@ const methodOverride = require('method-override')
 app.use(methodOverride('_method'))
 const MongoClient = require('mongodb').MongoClient;
 let db;
-require('dotenv').config()
+require('dotenv').config();
 
 
 MongoClient.connect(process.env.DB_URL, function (error, client) {

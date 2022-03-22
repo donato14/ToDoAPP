@@ -9,9 +9,10 @@ const methodOverride = require('method-override')
 app.use(methodOverride('_method'))
 const MongoClient = require('mongodb').MongoClient;
 let db;
+require('dotenv').config()
 
 
-MongoClient.connect('mongodb+srv://admin:qwer1234@cluster0.pzldi.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', function (error, client) {
+MongoClient.connect(process.env.DB_URL, function (error, client) {
   
   if (error) return console.log(error)
   db = client.db('todoapp');
@@ -22,7 +23,7 @@ MongoClient.connect('mongodb+srv://admin:qwer1234@cluster0.pzldi.mongodb.net/myF
 
 })
 
-app.listen(8888, function () {
+app.listen(process.env.PORT, function () {
   console.log('listening on 8888')
 });
 //서버를 띄우기 위한 기본 셋팅(express 라이브러리)
@@ -122,6 +123,19 @@ app.post('/login', passport.authenticate('local', {
   resp.redirect('/')
 });
 
+app.get('/mypage', logined, function (req, resp) {
+  console.log(req.user)
+  resp.render('mypage.ejs', {user : req.user})
+});
+
+function logined(req, resp, next) {
+  if (req.user) {
+    next()
+  } else {
+    resp.send('로그인해주세요')
+  }
+}
+
 
 passport.use(new LocalStrategy({
   usernameField: 'id',
@@ -141,3 +155,15 @@ passport.use(new LocalStrategy({
     }
   })
 }));
+
+//세션 저장
+passport.serializeUser(function (user, done) {
+  done(null, user.id)
+});
+
+//세션데이터를 가진 사람을 DB에서 찾기
+passport.deserializeUser(function (아이디, done) {
+  db.collection('login').findOne({id : 아이디}, function (error, result) {
+    done(null, result)
+  })
+});

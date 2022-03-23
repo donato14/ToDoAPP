@@ -204,3 +204,6 @@ app.delete('/delete', function (req, resp) {
     resp.status(200).send({ message : '성공했습니다' });
   });
 });
+
+app.use('/shop', require('./routes/shop.js'));
+app.use('/board/sub', require('./routes/board.js'));

@@ -34,6 +34,7 @@
         </a>
         <p>할일 마감 날짜 : <%= posts[i].날짜 %></p>
         <button class="btn btn-danger delete" data-id="<%= posts[i]._id %>">삭제</button>
+        <button class="btn btn-primary chat" data-id="<%= posts[i].작성자 %>">채팅하기</button>
       </li>
       <% } %>
     </ul>
@@ -55,6 +56,16 @@
       }).fail(function (xhr, textStatus, errorThrown) {
         console.log(xhr, textStatus, errorThrown);
       });
+    });
+
+    $('.chat').click(function (e) {
+      let _id = e.target.dataset.id;
+      $.post('/chatroom', {
+          당한사람id: _id
+        })
+        .then(() => {
+          console.log('채팅방 게시물 생성완료')
+        })
     });
 
     $('#search').click(function () {

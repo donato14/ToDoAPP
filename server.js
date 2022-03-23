@@ -205,12 +205,13 @@ app.delete('/delete', function (req, resp) {
   });
 });
 
+//Router 연습
 app.use('/shop', require('./routes/shop.js'));
 app.use('/board/sub', require('./routes/board.js'));
 
 //이미지 업로드
-
 let multer = require('multer');
+const { ObjectId } = require('mongodb');
 
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -238,5 +239,58 @@ app.post('/upload', upload.single('profile'), function (req, resp) {
 });
 
 app.get('/image/:imageName', function (req, resp) {
-  resp.sendFile( __dirname + '/public/image/' + req.params.imageName + '.jpg')
+  resp.sendFile(__dirname + '/public/image/' + req.params.imageName + '.jpg')
+});
+
+app.post('/chatroom', function (req, resp) {
+  var saved = {
+    title: '무슨무슨채팅방',
+    member: [ObjectId(req.body.당한사람id), req.user._id],
+    data: new Date()
+  }
+  db.collection('chatroom').insertOne(saved).then(function (result) {
+    resp.send('저장완료');
+  })
 })
+
+app.get('/chat', logined, function (req, resp) {
+  db.collection('chatroom').find({ member: req.user._id }).toArray().then((result) => {
+    // console.log(result);
+    resp.render('chat.ejs', { data: result })
+  })
+});
+
+app.post('/message', logined, function (req, resp) {
+  let 저장할거 = {
+    parent: req.body.parent,
+    content: req.body.content,
+    userid: req.user._id,
+    date: new Date(),
+  }
+  db.collection('message').insertOne(저장할거).then(() => {
+    console.log('DB저장 성공');
+    resp.send('DB저장성공')
+  })
+});
+
+app.get('/message/:id', logined, function (req, resp) {
+  resp.writeHead(200, {
+    "Connection": "keep-alive",
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+  });
+  db.collection('message').find({ parent: req.params.id }).toArray().then((result) => {
+    resp.write('event: test\n');
+    resp.write('data: ' + JSON.stringify(result) + '\n\n');
+  })
+
+  const pipeline = [
+    { $match: { 'fullDocument.parent' : req.params.id } }
+  ];
+  const collection = db.collection('message');
+  const changeStream = collection.watch(pipeline);
+  changeStream.on('change', (result) => {
+    resp.write('event: test\n');
+    resp.write('data: ' + JSON.stringify([result.fullDocument]) + '\n\n');
+  });
+});

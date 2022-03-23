@@ -207,3 +207,36 @@ app.delete('/delete', function (req, resp) {
 
 app.use('/shop', require('./routes/shop.js'));
 app.use('/board/sub', require('./routes/board.js'));
+
+//이미지 업로드
+
+let multer = require('multer');
+
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './public/image')
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname)
+  },
+  filefilter: function (req, file, cb) {
+    var ext = path.extname(file.originalname);
+    if (ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg') {
+      return callback(new Error('PNG, JPG만 업로드하세요'))
+    }
+    callback(null, true)
+  }
+})
+let upload = multer({ storage: storage });
+
+app.get('/upload', function (req, resp) {
+  resp.render('upload.ejs')
+});
+
+app.post('/upload', upload.single('profile'), function (req, resp) {
+  resp.send('완료')
+});
+
+app.get('/image/:imageName', function (req, resp) {
+  resp.sendFile( __dirname + '/public/image/' + req.params.imageName + '.jpg')
+})

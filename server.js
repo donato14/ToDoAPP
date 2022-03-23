@@ -40,25 +40,6 @@ app.get('/write', function (req, resp) {
   resp.render('write.ejs');
 });
 
-app.post('/add', function (req, resp) {
-  resp.send('전송완료');
-  // console.log(req.body);
-  // console.log(req.body.title);
-  // console.log(req.body.date);
-  db.collection('counter').findOne({ name: '게시물갯수' }, function (error, result) {
-    // console.log(result.totalPost)
-    let 총게시물갯수 = result.totalPost;
-
-    db.collection('post').insertOne({ _id : 총게시물갯수 + 1, 제목: req.body.title, 날짜: req.body.date }, function (error, result) {
-      console.log('저장완료');
-      db.collection('counter').updateOne({ name: '게시물갯수' }, { $inc: { totalPost: 1 } }, function (error, result) {
-        if(error){return console.log(error)}
-      })
-    });
-
-  });
-});
-
 app.get('/list', function (req, resp) { 
   //db에 저장된 post란 collection 안의 모든 데이터를 꺼내주세요
   db.collection('post').find().toArray(function (error, result) {
@@ -66,15 +47,6 @@ app.get('/list', function (req, resp) {
     resp.render('list.ejs', { posts : result });
   });
   
-});
-
-app.delete('/delete', function (req, resp) {
-  console.log(req.body);
-  req.body._id = parseInt(req.body._id);
-  db.collection('post').deleteOne(req.body, function (error, result) {
-    console.log('삭제완료');
-    resp.status(200).send({ message : '성공했습니다' });
-  });
 });
 
 app.get('/detail/:id', function (req, resp) {
@@ -191,3 +163,44 @@ app.get('/search', (req, resp) => {
   })
 });
 
+//가입기능
+app.post('/register', function (req, resp) {
+  db.collection('login').insertOne({ id: req.body.id, pw: req.body.pw }, function (error, result) {
+    resp.redirect('/')
+  })
+});
+
+app.post('/add', function (req, resp) {
+
+  resp.send('전송완료');
+  // console.log(req.body);
+  // console.log(req.body.title);
+  // console.log(req.body.date);
+  db.collection('counter').findOne({ name: '게시물갯수' }, function (error, result) {
+    // console.log(result.totalPost)
+    let 총게시물갯수 = result.totalPost;
+
+    let 저장할거 = { _id : 총게시물갯수 + 1, 제목: req.body.title, 날짜: req.body.date, 작성자 : req.user._id }
+
+    db.collection('post').insertOne(저장할거, function (error, result) {
+      console.log('저장완료');
+      db.collection('counter').updateOne({ name: '게시물갯수' }, { $inc: { totalPost: 1 } }, function (error, result) {
+        if(error){return console.log(error)}
+      })
+    });
+
+  });
+});
+
+app.delete('/delete', function (req, resp) {
+  console.log(req.body);
+  req.body._id = parseInt(req.body._id);
+
+  let 삭제할데이터 = { _id : req.body._id, 작성자 : req.user._id }
+
+  db.collection('post').deleteOne(삭제할데이터, function (error, result) {
+    console.log('삭제완료');
+    if (result) {console.log(result)}
+    resp.status(200).send({ message : '성공했습니다' });
+  });
+});

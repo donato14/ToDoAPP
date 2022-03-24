@@ -11,6 +11,11 @@ const MongoClient = require('mongodb').MongoClient;
 let db;
 require('dotenv').config();
 
+//socket.io setting
+const http = require('http').createServer(app);
+const { Server } = require('socket.io');
+const io = new Server(http);
+
 
 MongoClient.connect(process.env.DB_URL, function (error, client) {
   
@@ -23,7 +28,7 @@ MongoClient.connect(process.env.DB_URL, function (error, client) {
 
 })
 
-app.listen(process.env.PORT, function () {
+http.listen(process.env.PORT, function () {
   console.log('listening on 8888')
 });
 //서버를 띄우기 위한 기본 셋팅(express 라이브러리)
@@ -294,3 +299,30 @@ app.get('/message/:id', logined, function (req, resp) {
     resp.write('data: ' + JSON.stringify([result.fullDocument]) + '\n\n');
   });
 });
+
+//socket.io
+app.get('/socket', function (req, resp) {
+  resp.render('socket.ejs')
+});
+
+io.on('connection', function (socket) {
+  console.log('유저 접속됨');
+  // console.log(socket.id)
+  
+    //채팅방 여러개 만들고 요청 오면 넣어주기
+  socket.on('joinroom', function (data) {
+    socket.join('room1');
+  })
+  //메세지 보내기  (서버 -> 유저)
+  socket.on('user-send', function (data) {
+    // console.log(data);
+    io.emit('broadcast', data);
+    // io.to(socket.id).emit('brodcast', data);
+  });
+
+  //채팅방1에만 메세지 뿌리기
+  socket.on('room1-send', function (data) {
+    io.to('room1').emit('broadcast',data)
+  })
+
+})
